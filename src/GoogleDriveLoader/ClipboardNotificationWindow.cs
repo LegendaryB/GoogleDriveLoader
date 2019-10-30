@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -28,6 +27,12 @@ namespace GoogleDriveLoader
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool RemoveClipboardFormatListener(IntPtr hwnd);
 
+        [DllImport("kernel32.dll")]
+        private static extern bool TerminateThread(IntPtr hThread, uint dwExitCode);
+
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr GetCurrentThread();
+
         /// <summary>
         /// Sent when the contents of the clipboard have changed.
         /// </summary>
@@ -35,13 +40,23 @@ namespace GoogleDriveLoader
 
         private string previousClipboardContent;
 
-        public ClipboardNotificationWindow()
+        public ClipboardNotificationWindow(CancellationToken token)
         {
             InitializeComponent();
 
             Size = Size.Empty;
-            ShowInTaskbar = false;
+            // ShowInTaskbar = false;
             Visible = false;
+
+            token.Register(() =>
+            {
+                Invoke(new Action(() =>
+                {
+                    RemoveClipboardFormatListener(Handle);
+
+                    Application.Exit();
+                }));
+            });
         }
 
         protected override void OnHandleCreated(EventArgs e)
@@ -70,13 +85,6 @@ namespace GoogleDriveLoader
                 Console.WriteLine(data);
                 previousClipboardContent = data;
             }
-        }
-
-        protected override void OnClosing(CancelEventArgs e)
-        {
-            base.OnClosing(e);
-
-            RemoveClipboardFormatListener(Handle);
         }
     }
 }

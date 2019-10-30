@@ -10,18 +10,11 @@ namespace GoogleDriveLoader
 
         static void Main()
         {
-            Console.CancelKeyPress += Console_CancelKeyPress;
+            //Console.CancelKeyPress += Console_CancelKeyPress;
 
             WindowHandler.CreateWindow(_cts.Token);
 
             Console.ReadLine();
-        }
-
-        private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
-        {
-            e.Cancel = true;
-
-            _cts.Cancel();
         }
     }
 }
