@@ -6,13 +6,15 @@ namespace GoogleDriveLoader
 {
     internal static class WindowHandler
     {
-        // todo introduce interface for window
-        internal static ClipboardNotificationWindow CreateWindow(
+        private static ClipboardNotificationWindow window;
+        private static Thread thread;
+
+        internal static void CreateWindow(
             CancellationToken token)
         {
-            var window = new ClipboardNotificationWindow(token);
+            window = new ClipboardNotificationWindow();
 
-            var thread = new Thread(() =>
+            thread = new Thread(() =>
             {
                 Application.Run(window);
             });
@@ -20,9 +22,12 @@ namespace GoogleDriveLoader
             thread.SetApartmentState(ApartmentState.STA);
             thread.Start();
 
-            CancelableThread.Create(thread, token);
+            token.Register(DestroyWindow);
+        }
 
-            return window;
+        private static void DestroyWindow()
+        {
+            window.Invoke(new Action(window.Close));
         }
     }
 }

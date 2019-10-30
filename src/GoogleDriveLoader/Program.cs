@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading;
 
 namespace GoogleDriveLoader
@@ -11,13 +12,15 @@ namespace GoogleDriveLoader
         {
             Console.CancelKeyPress += Console_CancelKeyPress;
 
-            var window = WindowHandler.CreateWindow(_cts.Token);
+            WindowHandler.CreateWindow(_cts.Token);
 
             Console.ReadLine();
         }
 
         private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
         {
+            e.Cancel = true;
+
             _cts.Cancel();
         }
     }

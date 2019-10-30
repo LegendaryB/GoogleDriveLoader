@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
+using System.ComponentModel;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -35,19 +35,13 @@ namespace GoogleDriveLoader
 
         private string previousClipboardContent;
 
-        public ClipboardNotificationWindow(CancellationToken token)
+        public ClipboardNotificationWindow()
         {
             InitializeComponent();
 
             Size = Size.Empty;
             ShowInTaskbar = false;
             Visible = false;
-
-            token.Register(() =>
-            {
-                var test = RemoveClipboardFormatListener(Handle);
-                Application.ExitThread();
-            });
         }
 
         protected override void OnHandleCreated(EventArgs e)
@@ -76,6 +70,13 @@ namespace GoogleDriveLoader
                 Console.WriteLine(data);
                 previousClipboardContent = data;
             }
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            base.OnClosing(e);
+
+            RemoveClipboardFormatListener(Handle);
         }
     }
 }
