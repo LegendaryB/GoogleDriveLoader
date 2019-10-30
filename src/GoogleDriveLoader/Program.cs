@@ -1,12 +1,24 @@
-﻿using System;
+using System;
+using System.Threading;
 
 namespace GoogleDriveLoader
 {
-    class Program
+    static class Program
     {
-        static void Main(string[] args)
+        private static CancellationTokenSource _cts = new CancellationTokenSource();
+
+        static void Main()
         {
-            Console.WriteLine("Hello World!");
+            Console.CancelKeyPress += Console_CancelKeyPress;
+
+            var window = WindowHandler.CreateWindow(_cts.Token);
+
+            Console.ReadLine();
+        }
+
+        private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        {
+            _cts.Cancel();
         }
     }
 }
