@@ -1,6 +1,7 @@
-﻿using System;
+﻿using GoogleDriveLoader.Native;
+
+using System;
 using System.Drawing;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -8,70 +9,48 @@ namespace GoogleDriveLoader
 {
     public partial class ClipboardNotificationWindow : Form
     {
-        private static readonly HandleRef HwndMessage = new HandleRef(null, new IntPtr(-3));
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
-
-        /// <summary>
-        /// Places the given window in the system-maintained clipboard format listener list.
-        /// </summary>
-        [DllImport("user32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool AddClipboardFormatListener(IntPtr hwnd);
-
-        /// <summary>
-        /// Removes the given window from the system-maintained clipboard format listener list.
-        /// </summary>
-        [DllImport("user32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool RemoveClipboardFormatListener(IntPtr hwnd);
-
-        [DllImport("kernel32.dll")]
-        private static extern bool TerminateThread(IntPtr hThread, uint dwExitCode);
-
-        [DllImport("kernel32.dll")]
-        private static extern IntPtr GetCurrentThread();
-
-        /// <summary>
-        /// Sent when the contents of the clipboard have changed.
-        /// </summary>
-        private const int WM_CLIPBOARDUPDATE = 0x031D;
+        private readonly NotifyIcon _notifyIcon;
+        private readonly CancellationTokenSource _cts;
 
         private string previousClipboardContent;
 
-        public ClipboardNotificationWindow(CancellationToken token)
+        public ClipboardNotificationWindow(CancellationTokenSource cts)
         {
             InitializeComponent();
 
             Size = Size.Empty;
-            // ShowInTaskbar = false;
+            ShowInTaskbar = false;
             Visible = false;
 
-            token.Register(() =>
-            {
-                Invoke(new Action(() =>
-                {
-                    RemoveClipboardFormatListener(Handle);
+            _cts = cts;
 
-                    Application.Exit();
-                }));
-            });
+            _notifyIcon = new NotifyIcon
+            {
+                Icon = SystemIcons.Application,
+                Visible = true,
+                BalloonTipIcon = ToolTipIcon.Info,
+                BalloonTipTitle = "Google Drive link captured"
+            };
+
+            var exitMenuItem = new ToolStripMenuItem("Exit", null, OnExitTrayMenuItemClicked);
+
+            _notifyIcon.ContextMenuStrip = new ContextMenuStrip();
+            _notifyIcon.ContextMenuStrip.Items.Add(exitMenuItem);
         }
 
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
 
-            SetParent(Handle, (IntPtr)HwndMessage);
-            AddClipboardFormatListener(Handle);
+            User32.SetParent(Handle, (IntPtr)User32.HwndMessage);
+            User32.AddClipboardFormatListener(Handle);
         }
 
         protected override void WndProc(ref Message m)
         {
             base.WndProc(ref m);
 
-            if (m.Msg != WM_CLIPBOARDUPDATE)
+            if (m.Msg != User32.WM_CLIPBOARDUPDATE)
                 return;
 
             if (!Clipboard.ContainsText())
@@ -79,12 +58,20 @@ namespace GoogleDriveLoader
 
             var data = Clipboard.GetText();
 
-            if (data != previousClipboardContent)
+            if (data != previousClipboardContent && data.Contains("drive.google.com/drive/folders/"))
             {
-                // todo: event
-                Console.WriteLine(data);
+                _notifyIcon.BalloonTipText = data;
+                _notifyIcon.ShowBalloonTip(1000);
+
                 previousClipboardContent = data;
             }
+        }
+
+        private void OnExitTrayMenuItemClicked(object sender, EventArgs e)
+        {
+            User32.RemoveClipboardFormatListener(Handle);
+            _cts.Cancel();
+            Application.Exit();
         }
     }
 }
