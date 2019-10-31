@@ -60,6 +60,8 @@ namespace GoogleDriveLoader
 
             if (data != previousClipboardContent && data.Contains("drive.google.com/drive/folders/"))
             {
+                MediaQueue.Enqueue(data);
+
                 _notifyIcon.BalloonTipText = data;
                 _notifyIcon.ShowBalloonTip(1000);
 

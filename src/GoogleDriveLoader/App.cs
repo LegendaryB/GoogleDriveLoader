@@ -8,19 +8,21 @@ namespace GoogleDriveLoader
     public static class App
     {
         private static AppOptions options;
-        private static CancellationTokenSource cts = new CancellationTokenSource();
+        private static CancellationTokenSource cts;
 
         [STAThread]
         private static void Main()
         {
             options = AppOptions.Get();
+            cts = new CancellationTokenSource();
 
-            InitializeFolderStructure();
+            CreateOutputFolder();
+            MediaDownloader.ExecuteInBackground(options);            
 
             Application.Run(new ClipboardNotificationWindow(cts));
         }
 
-        private static void InitializeFolderStructure()
+        private static void CreateOutputFolder()
         {
             if (string.IsNullOrWhiteSpace(options.OutputFolder))
                 throw new ArgumentException(nameof(options.OutputFolder));
