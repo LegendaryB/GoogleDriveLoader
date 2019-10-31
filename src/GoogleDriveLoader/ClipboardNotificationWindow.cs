@@ -29,13 +29,19 @@ namespace GoogleDriveLoader
                 Icon = SystemIcons.Application,
                 Visible = true,
                 BalloonTipIcon = ToolTipIcon.Info,
-                BalloonTipTitle = "Google Drive link captured"
-            };
+                BalloonTipTitle = "Google Drive link captured",
+                BalloonTipText = "The progress can be monitored in the console window."
+        };
 
             var exitMenuItem = new ToolStripMenuItem("Exit", null, OnExitTrayMenuItemClicked);
 
             _notifyIcon.ContextMenuStrip = new ContextMenuStrip();
             _notifyIcon.ContextMenuStrip.Items.Add(exitMenuItem);
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
         }
 
         protected override void OnHandleCreated(EventArgs e)
@@ -61,9 +67,8 @@ namespace GoogleDriveLoader
             if (data != previousClipboardContent && data.Contains("drive.google.com/drive/folders/"))
             {
                 MediaQueue.Enqueue(data);
-
-                _notifyIcon.BalloonTipText = data;
-                _notifyIcon.ShowBalloonTip(1000);
+                
+                _notifyIcon.ShowBalloonTip(0);
 
                 previousClipboardContent = data;
             }

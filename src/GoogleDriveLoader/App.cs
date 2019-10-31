@@ -1,3 +1,4 @@
+using GoogleDriveLoader.Native;
 using System;
 using System.IO;
 using System.Threading;
@@ -13,12 +14,14 @@ namespace GoogleDriveLoader
         [STAThread]
         private static void Main()
         {
+            InitializeConsole();
+
             options = AppOptions.Get();
             cts = new CancellationTokenSource();
 
             CreateOutputFolder();
-            MediaDownloader.ExecuteInBackground(options);            
 
+            MediaDownloader.AttachToMediaQueue(options);
             Application.Run(new ClipboardNotificationWindow(cts));
         }
 
@@ -28,7 +31,19 @@ namespace GoogleDriveLoader
                 throw new ArgumentException(nameof(options.OutputFolder));
 
             if (!Directory.Exists(options.OutputFolder))
+            {
                 Directory.CreateDirectory(options.OutputFolder);
+                ConsoleOutput.WriteLine("The output folder creation was successful.");
+                return;
+            }
+
+            ConsoleOutput.WriteLine("Using existing folder for downloads.");
+        }
+
+        private static void InitializeConsole()
+        {
+            Kernel32.AllocConsole();
+            Console.Title = "Google Drive Loader";
         }
     }
 }
