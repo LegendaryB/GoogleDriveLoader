@@ -5,8 +5,6 @@ namespace GoogleDriveLoader
 {
     internal static class MediaQueue
     {
-        internal static Action ItemAdded;
-
         private static ConcurrentQueue<string> Items;
 
         static MediaQueue()
@@ -19,7 +17,6 @@ namespace GoogleDriveLoader
         internal static void Enqueue(string item)
         {
             Items.Enqueue(item);
-            ItemAdded?.Invoke();
         }
 
         internal static bool TryDequeue(out string item)

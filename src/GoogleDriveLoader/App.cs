@@ -1,4 +1,5 @@
 using GoogleDriveLoader.Native;
+
 using System;
 using System.IO;
 using System.Threading;
@@ -21,7 +22,9 @@ namespace GoogleDriveLoader
 
             CreateOutputFolder();
 
-            MediaDownloader.AttachToMediaQueue(options);
+            var downloader = new MediaDownloader(options, cts.Token);
+            downloader.ListenAsync();
+
             Application.Run(new ClipboardNotificationWindow(cts));
         }
 
