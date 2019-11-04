@@ -21,8 +21,6 @@ namespace GoogleDriveLoader
         private readonly string _outputFolder;
         private readonly CancellationToken _token;
 
-        private static int taskCount;
-
         public MediaDownloader(AppOptions options, CancellationToken token)
         {
             _maxParallelDownloads = options.MaxParallelDownloads;
@@ -36,13 +34,13 @@ namespace GoogleDriveLoader
         {
             while (!_token.IsCancellationRequested)
             {
-                if (!MediaQueue.TryDequeue(out var link))
+                if (!MediaQueue.TryDequeue(out var link) || string.IsNullOrWhiteSpace(link))
                 {
                     await Task.Delay(1000);
                     continue;
                 }
 
-                await DownloadMedia(link);
+                await DownloadAsync(link);
             }
         }
 
@@ -68,86 +66,57 @@ namespace GoogleDriveLoader
             });
         }
 
-        private async Task DownloadMedia(string link)
+        private async Task DownloadAsync(string link)
         {
-            var folder = await RetrieveFolder(link);
+            var folder = await GetFolderAsync(link);
 
             if (folder == null)
-            {
-                ConsoleOutput.WriteLine("Folder download aborted and removed from queue.");
                 return;
-            }
 
-            var files = await RetrieveFolderFiles(folder);
+            var files = await GetFilesAsync(folder);
 
             if (!files.Any())
-            {
-                ConsoleOutput.WriteLine($"Folder '{folder.Name}' contains no data. Aborted and removed from queue.");
                 return;
-            }
 
-            ConsoleOutput.WriteLine($"Found {files.Count} files in folder '{folder.Name}'.");
+            var localFolder = Path.Combine(_outputFolder, folder.Name);
+            Directory.CreateDirectory(localFolder);
 
-            foreach (var file in files)
+            Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = _maxParallelDownloads }, (file) =>
             {
-                while (taskCount == _maxParallelDownloads)
-                    await Task.Delay(500);
-
                 var resource = _driveService.Files.Get(file.Id);
 
-                taskCount++;
-
-                Task.Run(async () =>
+                using (var stream = new FileStream(Path.Combine(localFolder, file.Name), FileMode.Create))
                 {
-                    var localFolder = Path.Combine(_outputFolder, folder.Name);
-                    Directory.CreateDirectory(localFolder);
-
-                    using (var stream = new FileStream(Path.Combine(localFolder, file.Name), FileMode.Create))
-                    {
-                        ConsoleOutput.WriteLine($"Downloading '{file.Name}' ({AsMegabytes(file.Size)} MB)..");
-                        var result = await resource.DownloadAsync(stream);
-                        taskCount--;
-                    }
-                });
-            }
+                    var result = resource.DownloadWithStatus(stream);
+                }
+            });
         }
 
-        private async Task<GoogleDriveFile> RetrieveFolder(string link)
+        private async Task<GoogleDriveFile> GetFolderAsync(string link)
         {
             var driveFolderId = link.Split('/').Last();
 
-            try
-            {
-                var fileRequest = _driveService.Files.Get(driveFolderId);
-                fileRequest.SupportsAllDrives = true;
-                fileRequest.SupportsTeamDrives = true;
+            var fileRequest = _driveService.Files.Get(driveFolderId);
+            fileRequest.SupportsAllDrives = true;
+            fileRequest.SupportsTeamDrives = true;
 
-                var file = await fileRequest.ExecuteAsync();
-                ConsoleOutput.WriteLine($"Found folder - id: '{driveFolderId}' - name: {file.Name}");
-                return file;
-            }
-            catch
-            {
-                ConsoleOutput.WriteLine($"Could not find folder with id '{driveFolderId}'.");
-            }
-
-            return null;
+            var file = await fileRequest.ExecuteAsync();
+            return file;
         }
-
-        private async Task<IList<GoogleDriveFile>> RetrieveFolderFiles(GoogleDriveFile folder)
+        private async Task<IList<GoogleDriveFile>> GetFilesAsync(GoogleDriveFile folder)
         {
             var request = _driveService.Files.List();
             request.IncludeItemsFromAllDrives = true;
             request.IncludeTeamDriveItems = true;
             request.SupportsAllDrives = true;
             request.SupportsTeamDrives = true;
-            request.Fields = "nextPageToken, files(id, name, capabilities, size, mimeType)";
+            request.Fields = "files(id, name, size, trashed, md5Checksum)";
             request.Q = $"'{folder.Id}' in parents and trashed=false";
 
             return (await request.ExecuteAsync()).Files;
         }
 
-        private static double AsMegabytes(long? bytes)
+        private double AsMegabytes(long? bytes)
         {
             if (bytes == null)
                 return 0;

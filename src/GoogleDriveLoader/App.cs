@@ -36,11 +36,8 @@ namespace GoogleDriveLoader
             if (!Directory.Exists(options.OutputFolder))
             {
                 Directory.CreateDirectory(options.OutputFolder);
-                ConsoleOutput.WriteLine("The output folder creation was successful.");
                 return;
             }
-
-            ConsoleOutput.WriteLine("Using existing folder for downloads.");
         }
 
         private static void InitializeConsole()

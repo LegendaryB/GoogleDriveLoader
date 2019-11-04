@@ -10,8 +10,6 @@ namespace GoogleDriveLoader
         static MediaQueue()
         {
             Items = new ConcurrentQueue<string>();
-
-            ConsoleOutput.WriteLine("Media queue initialization successful.");
         }
 
         internal static void Enqueue(string item)
