@@ -25,7 +25,9 @@ The `appsettings.json` file resides in the same folder as the application.
 3. Follow this guide [Making own client id](https://rclone.org/drive/#making-your-own-client-id)
 4. Go to your dashboard, select credentials or login data and download the json
 5. Copy it to the application folder and name it credential.json
-2. Execute the application.
+6. Execute the application.
+7. Copy google drive folder links to automatically downloading them.
+8. Profit
 
 ## Contributing
 
