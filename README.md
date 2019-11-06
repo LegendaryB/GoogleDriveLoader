@@ -4,7 +4,7 @@
 [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/you-didnt-ask-for-this.svg)](https://forthebadge.com)
 
-[![GitHub license](https://img.shields.io/github/license/LegendaryB/GoogleDriveLoader.svg?longCache=true&style=flat-square)](https://github.com/LegendaryB/GoogleDriveLoader/blob/master/LICENSE)
+[![GitHub license](https://img.shields.io/github/license/LegendaryB/GoogleDriveLoader.svg?longCache=true&style=flat-square)](https://github.com/LegendaryB/GoogleDriveLoader/blob/master/LICENSE.md)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://paypal.me/alphadaniel)
 
 <sub>Built with ❤︎ by Daniel Belz</sub>
@@ -40,4 +40,4 @@ If you like my software, please consider [supporting me](https://paypal.me/alpha
 
 ## License
 
-This project is licensed under the MIT license - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT license - see the [LICENSE](LICENSE.md) file for details
