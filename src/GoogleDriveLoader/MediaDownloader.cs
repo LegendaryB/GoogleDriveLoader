@@ -1,7 +1,9 @@
-﻿using Google.Apis.Auth.OAuth2;
+﻿using Konsole;
+using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
+using GoogleDriveFile = Google.Apis.Drive.v3.Data.File;
 
 using System;
 using System.Collections.Generic;
@@ -9,8 +11,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
-using GoogleDriveFile = Google.Apis.Drive.v3.Data.File;
 
 namespace GoogleDriveLoader
 {
@@ -79,6 +79,7 @@ namespace GoogleDriveLoader
                 return;
 
             var localFolder = Path.Combine(_outputFolder, folder.Name);
+            var longestTitle = files.Max(f => f.Name.Length);
             Directory.CreateDirectory(localFolder);
 
             Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = _maxParallelDownloads }, (file) =>
@@ -87,6 +88,14 @@ namespace GoogleDriveLoader
 
                 using (var stream = new FileStream(Path.Combine(localFolder, file.Name), FileMode.Create))
                 {
+                    var bar = new ProgressBar((int)AsMegabytes(file.Size), longestTitle, '─');
+                    bar.Refresh(0, file.Name);
+
+                    resource.MediaDownloader.ProgressChanged += (downloadProgress) =>
+                    {
+                        bar.Refresh((int)AsMegabytes(downloadProgress.BytesDownloaded), file.Name);
+                    };
+
                     var result = resource.DownloadWithStatus(stream);
                 }
             });
@@ -110,7 +119,7 @@ namespace GoogleDriveLoader
             request.IncludeTeamDriveItems = true;
             request.SupportsAllDrives = true;
             request.SupportsTeamDrives = true;
-            request.Fields = "files(id, name, size, trashed, md5Checksum)";
+            request.Fields = "files(id, name, size, trashed)";
             request.Q = $"'{folder.Id}' in parents and trashed=false";
 
             return (await request.ExecuteAsync()).Files;

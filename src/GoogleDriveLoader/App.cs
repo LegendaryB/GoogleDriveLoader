@@ -3,6 +3,7 @@ using GoogleDriveLoader.Native;
 using System;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace GoogleDriveLoader
@@ -12,9 +13,16 @@ namespace GoogleDriveLoader
         private static AppOptions options;
         private static CancellationTokenSource cts;
 
-        [STAThread]
-        private static void Main()
+        private static async Task Main()
         {
+            var thread = new Thread(() =>
+            {
+                Application.Run(new ClipboardNotificationWindow(cts));
+            });
+
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+
             InitializeConsole();
 
             options = AppOptions.Get();
@@ -22,10 +30,7 @@ namespace GoogleDriveLoader
 
             CreateOutputFolder();
 
-            var downloader = new MediaDownloader(options, cts.Token);
-            downloader.ListenAsync();
-
-            Application.Run(new ClipboardNotificationWindow(cts));
+            await new MediaDownloader(options, cts.Token).ListenAsync();
         }
 
         private static void CreateOutputFolder()

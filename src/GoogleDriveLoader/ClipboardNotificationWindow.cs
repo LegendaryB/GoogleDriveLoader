@@ -31,7 +31,7 @@ namespace GoogleDriveLoader
                 BalloonTipIcon = ToolTipIcon.Info,
                 BalloonTipTitle = "Google Drive folder link captured",
                 BalloonTipText = "The folder was added to the queue."
-        };
+            };
 
             var exitMenuItem = new ToolStripMenuItem("Exit", null, OnExitTrayMenuItemClicked);
 
