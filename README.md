@@ -40,4 +40,4 @@ If you like my software, please consider [supporting me](https://paypal.me/alpha
 
 ## License
 
-This project is licensed under the MIT license - see the [LICENSE](LICENSE) file for details
+This project is licensed under the MIT license - see the [LICENSE](LICENSE.md) file for details
