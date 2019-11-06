@@ -7,9 +7,6 @@
 [![GitHub license](https://img.shields.io/github/license/LegendaryB/GoogleDriveLoader.svg?longCache=true&style=flat-square)](https://github.com/LegendaryB/GoogleDriveLoader/blob/master/LICENSE)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://paypal.me/alphadaniel)
 
-Google Drive Downloader
-<br>
-<br>
 <sub>Built with ❤︎ by Daniel Belz</sub>
 </div><br>
 
