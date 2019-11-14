@@ -121,7 +121,6 @@ namespace GoogleDriveLoader
             {
                 var request = _driveService.Files.List();
                 request.PageToken = nextPageToken;
-                request.PageSize = 10;
                 request.IncludeItemsFromAllDrives = true;
                 request.IncludeTeamDriveItems = true;
                 request.SupportsAllDrives = true;
