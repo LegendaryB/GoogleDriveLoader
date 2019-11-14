@@ -114,15 +114,28 @@ namespace GoogleDriveLoader
         }
         private async Task<IList<GoogleDriveFile>> GetFilesAsync(GoogleDriveFile folder)
         {
-            var request = _driveService.Files.List();
-            request.IncludeItemsFromAllDrives = true;
-            request.IncludeTeamDriveItems = true;
-            request.SupportsAllDrives = true;
-            request.SupportsTeamDrives = true;
-            request.Fields = "files(id, name, size, trashed)";
-            request.Q = $"'{folder.Id}' in parents and trashed=false";
+            var fileList = new List<GoogleDriveFile>();
+            var nextPageToken = string.Empty;
 
-            return (await request.ExecuteAsync()).Files;
+            do
+            {
+                var request = _driveService.Files.List();
+                request.PageToken = nextPageToken;
+                request.IncludeItemsFromAllDrives = true;
+                request.IncludeTeamDriveItems = true;
+                request.SupportsAllDrives = true;
+                request.SupportsTeamDrives = true;
+                request.Fields = "nextPageToken, files(id, name, size, trashed, mimeType)";
+                request.Q = $"'{folder.Id}' in parents and trashed=false";
+
+                var result = await request.ExecuteAsync();
+                fileList.AddRange(result.Files);
+
+                nextPageToken = result.NextPageToken;
+            }
+            while (!string.IsNullOrWhiteSpace(nextPageToken));
+
+            return fileList;
         }
 
         private double AsMegabytes(long? bytes)
