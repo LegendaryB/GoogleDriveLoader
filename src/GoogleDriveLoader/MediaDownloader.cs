@@ -126,7 +126,7 @@ namespace GoogleDriveLoader
                 request.SupportsAllDrives = true;
                 request.SupportsTeamDrives = true;
                 request.Fields = "nextPageToken, files(id, name, size, trashed, mimeType)";
-                request.Q = $"'{folder.Id}' in parents and trashed=false";
+                request.Q = $"'{folder.Id}' in parents and mimeType != 'application/vnd.google-apps.folder' and trashed=false";
 
                 var result = await request.ExecuteAsync();
                 fileList.AddRange(result.Files);
