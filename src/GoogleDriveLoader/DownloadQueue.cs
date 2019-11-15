@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace GoogleDriveLoader
 {
-    internal static class MediaQueue
+    internal static class DownloadQueue
     {
         private static ConcurrentQueue<string> Items;
 
-        static MediaQueue()
+        static DownloadQueue()
         {
             Items = new ConcurrentQueue<string>();
         }

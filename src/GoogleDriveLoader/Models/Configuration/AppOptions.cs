@@ -3,11 +3,11 @@
 using System;
 using System.IO;
 
-namespace GoogleDriveLoader
+namespace GoogleDriveLoader.Models.Configuration
 {
     public class AppOptions
     {
-        public string OutputFolder { get; set; }
+        public string DownloadRootDirectory { get; set; }
         public int MaxParallelDownloads { get; set; }
 
         internal static AppOptions Get()
@@ -21,6 +21,12 @@ namespace GoogleDriveLoader
 
             var configurationRoot = builder.Build();
             var configuration = configurationRoot.Get<AppOptions>();
+
+            if (configuration == null)
+                throw new ArgumentNullException(nameof(configuration));
+
+            if (string.IsNullOrWhiteSpace(configuration.DownloadRootDirectory))
+                throw new ArgumentNullException(nameof(configuration.DownloadRootDirectory));
 
             return configuration;
         }

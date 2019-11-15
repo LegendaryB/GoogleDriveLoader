@@ -1,4 +1,4 @@
-﻿namespace GoogleDriveLoader
+﻿namespace GoogleDriveLoader.Presentation
 {
     partial class ClipboardNotificationWindow
     {

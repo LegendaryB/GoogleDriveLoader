@@ -1,7 +1,8 @@
 using GoogleDriveLoader.Native;
+using GoogleDriveLoader.Presentation;
+using GoogleDriveLoader.Models.Configuration;
 
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -10,8 +11,8 @@ namespace GoogleDriveLoader
 {
     public static class App
     {
-        private static AppOptions options;
-        private static CancellationTokenSource cts;
+        private static readonly CancellationTokenSource cts = 
+            new CancellationTokenSource();
 
         private static async Task Main()
         {
@@ -25,24 +26,10 @@ namespace GoogleDriveLoader
 
             InitializeConsole();
 
-            options = AppOptions.Get();
-            cts = new CancellationTokenSource();
+            var options = AppOptions.Get();
+            Filesystem.Initialize(options.DownloadRootDirectory);
 
-            CreateOutputFolder();
-
-            await new MediaDownloader(options, cts.Token).ListenAsync();
-        }
-
-        private static void CreateOutputFolder()
-        {
-            if (string.IsNullOrWhiteSpace(options.OutputFolder))
-                throw new ArgumentException(nameof(options.OutputFolder));
-
-            if (!Directory.Exists(options.OutputFolder))
-            {
-                Directory.CreateDirectory(options.OutputFolder);
-                return;
-            }
+            await DownloadQueueObserver.ObserveAsync(options.MaxParallelDownloads, cts.Token);
         }
 
         private static void InitializeConsole()

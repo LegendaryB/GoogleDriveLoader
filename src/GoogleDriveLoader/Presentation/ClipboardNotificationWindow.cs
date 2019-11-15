@@ -5,7 +5,7 @@ using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace GoogleDriveLoader
+namespace GoogleDriveLoader.Presentation
 {
     public partial class ClipboardNotificationWindow : Form
     {
@@ -66,7 +66,7 @@ namespace GoogleDriveLoader
 
             if (data != previousClipboardContent && data.Contains("drive.google.com/drive/folders/"))
             {
-                MediaQueue.Enqueue(data);
+                DownloadQueue.Enqueue(data);
                 
                 _notifyIcon.ShowBalloonTip(0);
 
